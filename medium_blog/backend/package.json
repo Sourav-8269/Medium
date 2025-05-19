@@ -8,8 +8,10 @@
   "dependencies": {
     "@prisma/client": "^6.7.0",
     "@prisma/extension-accelerate": "^1.3.0",
+    "@sourav-8269/medium-common": "^1.0.0",
     "hono": "^4.7.9",
-    "prisma": "^6.7.0"
+    "prisma": "^6.7.0",
+    "zod": "^3.24.4"
   },
   "devDependencies": {
     "wrangler": "^4.4.0"

@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
-import { decode, sign, verify } from "hono/jwt";
+import { verify } from "hono/jwt";
 import { JWTPayload } from "hono/utils/jwt/types";
 
 export const blogRouter = new Hono<{
@@ -16,13 +16,18 @@ export const blogRouter = new Hono<{
 
 blogRouter.use("/*", async (c, next) => {
   const jwt = c.req.header("Authorization") || "";
-  const payload = await verify(jwt, c.env.JWT_SECRET);
-  if (!payload) {
-    c.status(401);
+  try {
+    const payload = await verify(jwt, c.env.JWT_SECRET);
+    if (!payload) {
+      c.status(401);
+      return c.json({ error: "unauthorized" });
+    }
+    c.set("userId", payload.id);
+    await next();
+  } catch {
+    c.status(403);
     return c.json({ error: "unauthorized" });
   }
-  c.set("userId", payload.id);
-  await next();
 });
 
 blogRouter.post("/", async (c) => {
@@ -94,7 +99,6 @@ blogRouter.put("/:id", async (c) => {
 
   const body = await c.req.json();
   const id = c.req.param("id");
-  console.log("from params", id)
 
   try {
     const blog = await prisma.post.update({
